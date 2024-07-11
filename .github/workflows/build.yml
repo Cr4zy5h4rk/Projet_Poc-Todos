@@ -48,7 +48,7 @@ jobs:
         id: quality-gate-check
         #votre travail
         #adapter : peut utiliser sonarcloud ou une instance distante
-        run:  mvn clean verify sonar:sonar -Dsonar.organization=baamethgit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=baamethgit_ProjetAgilite2024
+        run:  mvn clean verify sonar:sonar -Dsonar.organization=Cr4zy5h4rk -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=a6d19e5a5f71316377d00d5c67bc620fed7b2209
     
       # - name: Check Quality Gate
       #   #votre travail
