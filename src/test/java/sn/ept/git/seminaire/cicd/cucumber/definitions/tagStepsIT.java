@@ -1,7 +1,10 @@
 package sn.ept.git.seminaire.cicd.cucumber.definitions;
 
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Slf4j
 @WebMvcTest(TagResource.class)
 @DisplayNameGeneration(ReplaceCamelCase.class)
-class tagStepsIT {
+public class tagStepsIT {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -36,17 +39,23 @@ class tagStepsIT {
     private TagServiceImpl service;
 
     private TagDTO tagDTO;
+    private String tagId;
 
-    @BeforeEach
-    void beforeEach() {
+    @Before
+    public void setUp() {
         tagDTO = TagDTO.builder()
                 .id(UUID.randomUUID().toString())
                 .name("Work")
                 .build();
     }
 
-    @Test
-    void addTag_shouldReturn201() throws Exception {
+    @Given("tag name is {string}")
+    public void givenTagName(String name) {
+        tagDTO.setName(name);
+    }
+
+    @When("call add tag")
+    public void whenCallAddTag() throws Exception {
         Mockito.when(service.save(Mockito.any())).thenReturn(tagDTO);
         mockMvc.perform(post(UrlMapping.Tag.ADD)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,31 +64,55 @@ class tagStepsIT {
                 .andExpect(jsonPath("$.name").value(tagDTO.getName()));
     }
 
-    @Test
-    void findTagById_shouldReturnTag() throws Exception {
+    @Then("the returned http status is {int}")
+    public void thenTheReturnedHttpStatusIs(int status) throws Exception {
+        mockMvc.perform(post(UrlMapping.Tag.ADD)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtil.convertObjectToJsonBytes(tagDTO)))
+                .andExpect(status().is(status));
+    }
+
+    @Then("the returned tag has name {string}")
+    public void thenTheReturnedTagHasName(String name) throws Exception {
+        mockMvc.perform(post(UrlMapping.Tag.ADD)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtil.convertObjectToJsonBytes(tagDTO)))
+                .andExpect(jsonPath("$.name").value(name));
+    }
+
+    @Given("tags table contains data:")
+    public void givenTagsTableContainsData(io.cucumber.datatable.DataTable dataTable) {
+        // Use the DataTable to set up the initial data state
+        dataTable.asMaps().forEach(row -> {
+            tagDTO.setId(row.get("id"));
+            tagDTO.setName(row.get("name"));
+        });
+    }
+
+    @When("call find tag by id with id={string}")
+    public void whenCallFindTagByIdWithId(String id) throws Exception {
         Mockito.when(service.findById(Mockito.any())).thenReturn(Optional.ofNullable(tagDTO));
-        mockMvc.perform(get(UrlMapping.Tag.FIND, tagDTO.getId())
+        mockMvc.perform(get(UrlMapping.Tag.FIND, id)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(tagDTO.getName()));
     }
 
-    @Test
-    void updateTag_shouldReturn202() throws Exception {
+    @When("call update tag with id={string}")
+    public void whenCallUpdateTagWithId(String id) throws Exception {
         tagDTO.setName("Home");
         Mockito.when(service.update(Mockito.any(), Mockito.any())).thenReturn(tagDTO);
-        mockMvc.perform(put(UrlMapping.Tag.UPDATE, tagDTO.getId())
+        mockMvc.perform(put(UrlMapping.Tag.UPDATE, id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtil.convertObjectToJsonBytes(tagDTO)))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.name").value(tagDTO.getName()));
     }
 
-
-    @Test
-    void deleteTagById_shouldReturn202() throws Exception {
+    @When("call delete tag with id={string}")
+    public void whenCallDeleteTagWithId(String id) throws Exception {
         Mockito.doNothing().when(service).delete(Mockito.any());
-        mockMvc.perform(delete(UrlMapping.Tag.DELETE, tagDTO.getId())
+        mockMvc.perform(delete(UrlMapping.Tag.DELETE, id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
