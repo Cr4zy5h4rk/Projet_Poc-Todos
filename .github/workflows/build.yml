@@ -42,7 +42,7 @@ jobs:
         run: mvn test -Put
 
       - name: Integration Testing
-        run: mvn test -Pit
+        run: mvn clean test
 
       - name: Quality Gate
         id: quality-gate-check
