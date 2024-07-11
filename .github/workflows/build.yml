@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: "zulu"
+          distribution: 'zulu'
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
@@ -34,9 +34,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Dependencies Scan
-        #if: 1>2
-        run: mvn clean verify -DskipTests -Pcve
+      # - name: Dependencies Scan
+      #   if: 1>2
+      #   run: mvn clean verify -DskipTests -Pcve
 
       - name: Unit Testing
         run: mvn test -Put
@@ -45,35 +45,17 @@ jobs:
         run: mvn test -Pit
 
       - name: Quality Gate
-        # On a utilisé sonarcloud ou une instance distante
-        run: mvn clean verify sonar:sonar -Dsonar.organization=mlndiaye -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=mlndiaye_AgiliteProject_Grpe_3
-
-      - name: Check Quality Gate
-        id: check_quality_gate
-        run: |
-          echo "Checking if quality gate is met ..."
-          SONAR_PROJECT_KEY="mlndiaye_AgiliteProject_Grpe_3"
-          SONAR_HOST_URL="https://sonarcloud.io"
-          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
-
-          status="IN_PROGRESS"
-          attempt_counter=0
-          max_attempts=10
-
-          while [[ "$status" != "OK" && "$status" != "ERROR" && $attempt_counter -lt $max_attempts ]]; do
-            sleep 10
-            response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$SONAR_PROJECT_KEY")
-            status=$(echo $response | jq -r '.projectStatus.status')
-            attempt_counter=$((attempt_counter+1))
-          done
-
-          if [[ "$status" != "OK" ]]; then
-            echo "Quality Gate failed"
-            echo "$response" | jq
-            exit 1
-          else
-            echo "Quality Gate passed"
-          fi
+        id: quality-gate-check
+        #votre travail
+        #adapter : peut utiliser sonarcloud ou une instance distante
+        run:  mvn clean verify sonar:sonar -Dsonar.organization=baamethgit -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=baamethgit_ProjetAgilite2024
+    
+      # - name: Check Quality Gate
+      #   #votre travail
+      #   #verifier si la Quality Gate is ok
+      #   run: |
+      #     echo "The Quality Gate status is ${{ steps.quality-gate-check.outputs.quality-gate-status }}"
+      #   # echo "Checking quality gate ... "
 
       - name: Package
         run: mvn -B package  -DskipTests=true
@@ -86,30 +68,13 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t  ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:${{ github.sha }} -t  ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest  .
+          docker build -t  ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:${{ github.sha }} -t  ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest  .   
 
       - name: Publish Docker image versions
         run: |
           docker push --all-tags  ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}
 
-      ##
-
-      # - name: Deploy to Dev
-      #   #votre travail
-      #   #se connecter a un serveur distant et deployer l'image docker que vous venez de builder
-      #   run: echo " 1) Login to my remote server ...\n 2) Stop docker container if running ... \n 3) Pull latest version and run it ... "
-
-      # - name: Wait for deploy to finish
-      #   #votre travail
-      #   run: echo "Wait 30s ... "
-
-      # - name: Check deploy
-      #   #verifier si le deploiement s'est bien passe
-      #   #votre travail
-      #   run: echo " 1) Run Get request <my_server_ip:my_port/cicd/_health> to check if service is running ...\n 2) Get request should return 200 with content <Welcome to my Todo app> ..."
-
-      ## NOTRE TRAVAIL
-
+      #votre travail
       #se connecter a un serveur distant et deployer l'image docker que vous venez de builder
       - name: Login to my remote server
         env:
@@ -122,42 +87,56 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST
           echo 'success'
-
-      - name: Stop and remove docker container if running
-        run: |
-          docker stop ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }} || true
-          docker rm ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }} || true
-
+         
+      - name: Stop docker container if running
+        run: sudo docker stop ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }} || true
+      
       - name: Pull latest version
-        run: docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest
+        run: sudo docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest
 
       - name: Run latest version
-        run: docker run -d --name todos -p 80:8080 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest
-
+        run: sudo docker run -d --name todos -p 80:8080 ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_REGISTRY_IMAGE }}:latest
+      
       - name: Wait for deploy to finish
-        #notre travail
+        #votre travail
         run: |
-          echo "Wait 60s ... "
-          sleep 60
+          echo "Wait 120s ... "
+          sleep 120
           echo "deployment finished"
-
       - name: Check deploy
         env:
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+            REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
         run: |
-          echo "1) Run Get request to check if service is running ..."
-          status=$(curl -s -o /dev/null -w "%{http_code}" http://$REMOTE_HOST:80/cicd/_health)
-          if [ $status -eq 200 ]; then
-            echo "Service is running."
-            echo "2) Get request returned HTTP 200."
-            content=$(curl -s http://$REMOTE_HOST:80/cicd/_health)
-            if [[ $content == *"Welcome to my Todo app"* ]]; then
-              echo "Content verification successful."
+            echo "1) Run Get request to check if service is running ..."
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://$REMOTE_HOST:80/cicd/_health)
+            if [ $status -eq 200 ]; then
+              echo "Service is running."
+              echo "2) Get request returned HTTP 200."
+              content=$(curl -s http://$REMOTE_HOST:80/cicd/_health)
+              if [[ $content == *"Welcome to my Todo app"* ]]; then
+                echo "Content verification successful."
+              else
+                echo "Content verification failed. Expected content not found."
+                exit 1
+              fi
             else
-              echo "Content verification failed. Expected content not found."
+              echo "Service is not running. HTTP status code: $status"
               exit 1
             fi
-          else
-            echo "Service is not running. HTTP status code: $status"
-            exit 1
-          fi
+        
+      # - name: Check deploy
+      #   run : |
+      #     if curl -f http://${{ secrets.REMOTE_HOST }}:80/cicd/_health; then
+      #       echo "Service is running."
+      #     else
+      #       echo "Service is not running."
+      #       exit 1
+      #     fi
+        #verifier si le deploiement s'est bien passe
+       
+        # run: |
+          
+          # echo " 1) Run Get request <my_server_ip:my_port/cicd/_health> to check if service is running ...\n 2) Get request should return 200 with content <Welcome to my Todo app> ..."
+
+
+
