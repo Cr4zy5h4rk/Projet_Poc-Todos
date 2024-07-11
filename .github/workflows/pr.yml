@@ -3,6 +3,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+  push:
+    branches:
+      - main
+
 jobs:
   build:
     name: Build and analyze
@@ -12,11 +16,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up  JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: 'zulu'
+          distribution: "zulu"
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
@@ -43,7 +47,31 @@ jobs:
         run: mvn test -Pit
 
       - name: Quality Gate
-        run:  mvn clean verify sonar:sonar -Dsonar.organization=ept-git -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=seenibu_poc-todos
+        run: mvn clean verify sonar:sonar -Dsonar.organization=mlndiaye -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=mlndiaye_AgiliteProject_Grpe_3
 
       - name: Check Quality Gate
-        run: echo "Checking if quality gate is met ... "
+        id: check_quality_gate
+        run: |
+          echo "Checking if quality gate is met ..."
+          SONAR_PROJECT_KEY="mlndiaye_AgiliteProject_Grpe_3"
+          SONAR_HOST_URL="https://sonarcloud.io"
+          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+
+          status="IN_PROGRESS"
+          attempt_counter=0
+          max_attempts=10
+
+          while [[ "$status" != "OK" && "$status" != "ERROR" && $attempt_counter -lt $max_attempts ]]; do
+            sleep 10
+            response=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/project_status?projectKey=$SONAR_PROJECT_KEY")
+            status=$(echo $response | jq -r '.projectStatus.status')
+            attempt_counter=$((attempt_counter+1))
+          done
+
+          if [[ "$status" != "OK" ]]; then
+            echo "Quality Gate failed"
+            echo "$response" | jq
+            exit 1
+          else
+            echo "Quality Gate passed"
+          fi
