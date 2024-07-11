@@ -6,7 +6,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,7 +38,6 @@ public class tagStepsIT {
     private TagServiceImpl service;
 
     private TagDTO tagDTO;
-    private String tagId;
 
     @Before
     public void setUp() {
@@ -64,8 +62,8 @@ public class tagStepsIT {
                 .andExpect(jsonPath("$.name").value(tagDTO.getName()));
     }
 
-    @Then("the returned http status is {int}")
-    public void thenTheReturnedHttpStatusIs(int status) throws Exception {
+    @Then("the http status is {int}")
+    public void thenTheHttpStatusIs(int status) throws Exception {
         mockMvc.perform(post(UrlMapping.Tag.ADD)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtil.convertObjectToJsonBytes(tagDTO)))
