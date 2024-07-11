@@ -317,26 +317,6 @@
             </activation>
             <build>
                 <plugins>
-                    <!--https://jeremylong.github.io/DependencyCheck/dependency-check-maven/-->
-<!--                    <plugin>-->
-<!--                        <groupId>org.owasp</groupId>-->
-<!--                        <artifactId>dependency-check-maven</artifactId>-->
-<!--                        <version>9.0.10</version>-->
-<!--                        <configuration>-->
-<!--                            <failBuildOnCVSS>0</failBuildOnCVSS>-->
-<!--                            <failOnError>true</failOnError>-->
-<!--                            <suppressionFiles>-->
-<!--                                <suppressionFile>${basedir}/suppression.xml</suppressionFile>-->
-<!--                            </suppressionFiles>-->
-<!--                        </configuration>-->
-<!--                        <executions>-->
-<!--                            <execution>-->
-<!--                                <goals>-->
-<!--                                    <goal>check</goal>-->
-<!--                                </goals>-->
-<!--                            </execution>-->
-<!--                        </executions>-->
-<!--                    </plugin>-->
                 </plugins>
             </build>
         </profile>
@@ -354,7 +334,6 @@
                             <includes>
                                 <include>**/*Test.java</include>
                             </includes>
-<!--                            <argLine>${maven-surefire-plugin.argLine}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -376,7 +355,6 @@
                                 <include>**/Cucumber*.java</include>
                                 <include>**/*Cucumber*.java</include>
                             </includes>
-<!--                            <argLine>${maven-surefire-plugin.argLine}</argLine>-->
                         </configuration>
                     </plugin>
                 </plugins>
