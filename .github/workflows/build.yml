@@ -34,23 +34,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      # - name: Dependencies Scan
-      #   if: 1>2
-      #   run: mvn clean verify -DskipTests -Pcve
-
       - name: Unit Testing
         run: mvn test -Put
 
       - name: Integration Testing
         run: mvn clean test
 
-      - name: Quality Gate
-        id: quality-gate-check
-        run: mvn clean verify sonar:sonar -Dsonar.organization=Cr4zy5h4rk -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.projectKey=Cr4zy5h4rk_Projet_Poc-Todos
-
-      # - name: Check Quality Gate
-      #   run: |
-      #     echo "The Quality Gate status is ${{ steps.quality-gate-check.outputs.quality-gate-status }}"
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Cr4zy5h4rk_Projet_Poc-Todos
 
       - name: Package
         run: mvn -B package -DskipTests=true
