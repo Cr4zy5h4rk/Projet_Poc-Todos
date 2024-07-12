@@ -26,7 +26,7 @@ public class TestData {
 
 
     public static final class Update {
-        private Update(){}
+        //private Update(){}
         public static final UUID id = UUID.randomUUID();
         public static final Instant createdDate = Instant.now();
         public static final Instant lastModifiedDate = Instant.now();

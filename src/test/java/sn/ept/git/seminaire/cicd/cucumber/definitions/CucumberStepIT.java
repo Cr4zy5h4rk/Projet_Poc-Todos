@@ -38,7 +38,7 @@ public class CucumberStepIT {
 
 
     public static final String COMPLETED = "completed";
-    private final static String BASE_URI = "http://localhost";
+    private static final String BASE_URI = "http://localhost";
     public static final String API_PATH = "/cicd/api/todos";
     public static final String ID = "id";
     public static final String TITLE = "title";
@@ -48,7 +48,7 @@ public class CucumberStepIT {
     private String title;
     private String description;
     private Response response;
-    private static final ObjectMapper objectMapper = new ObjectMapper();;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private TodoRepository todoRepository;
 
