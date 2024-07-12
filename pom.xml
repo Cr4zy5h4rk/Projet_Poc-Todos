@@ -30,9 +30,9 @@
 
         <!-- JaCoCo Properties -->
 
-        <sonar.organization>ept-git</sonar.organization>
+        <sonar.organization>Cr4zy5h4rk</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.projectKey>sn.ept.git.seminaire.cicd.todos</sonar.projectKey>
+        <sonar.projectKey>Cr4zy5h4rk_Projet_Poc-Todos</sonar.projectKey>
         <sonar.projectName>poc-todos</sonar.projectName>
         <jacoco.version>0.8.8</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>

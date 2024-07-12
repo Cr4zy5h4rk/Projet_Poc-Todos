@@ -20,13 +20,6 @@ jobs:
           java-version: 17
           distribution: 'zulu'
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
@@ -38,13 +31,10 @@ jobs:
         run: mvn test -Put
 
       - name: Integration Testing
-        run: mvn clean test
+        run: mvn test -Pit
 
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Cr4zy5h4rk_Projet_Poc-Todos
+      - name: Build
+        run: mvn clean verify
 
       - name: Package
         run: mvn -B package -DskipTests=true
