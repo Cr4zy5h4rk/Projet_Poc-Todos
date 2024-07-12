@@ -30,7 +30,7 @@
 
         <!-- JaCoCo Properties -->
 
-        <sonar.organization>Cr4zy5h4rk</sonar.organization>
+        <sonar.organization>cr4zy5h4rk</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.projectKey>Cr4zy5h4rk_Projet_Poc-Todos</sonar.projectKey>
         <sonar.projectName>poc-todos</sonar.projectName>
